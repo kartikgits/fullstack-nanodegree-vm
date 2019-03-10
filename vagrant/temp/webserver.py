@@ -22,7 +22,9 @@ class webServerHandler(BaseHTTPRequestHandler):
                 output+="<html><body>"
                 restaurants = session.query(Restaurant).all()
                 for restaurant in restaurants:
-                    output+="<h2>%s</h2>" % restaurant.name
+                    output+="<div style='font-size:20px'>%s</div>" % restaurant.name
+                    output+="<a href='#'>Edit</a><br/>"
+                    output+="<a href='#'>Delete</a><br/><br/>"
                 output+="</body></html>"
                 self.wfile.write(output)
                 print output
