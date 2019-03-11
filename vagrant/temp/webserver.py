@@ -32,6 +32,25 @@ class webServerHandler(BaseHTTPRequestHandler):
                     self.wfile.write(output)
                     return
 
+            if self.path.endswith("/delete"):
+                restaurantIDPath = self.path.split("/")[2]
+                print restaurantIDPath
+                myRestaurantQuery = session.query(Restaurant).filter_by(id=restaurantIDPath).one()
+                if myRestaurantQuery:
+                    self.send_response(200)
+                    self.send_header('Content-type', 'text/html')
+                    self.end_headers()
+                    output=""
+                    output+="<html><body>"
+                    output+="<form method='POST' enctype='multipart/form-data' action='restaurants/%s/delete'>" % restaurantIDPath
+                    output+="Are you sure you want to delete restaurant <em>%s</em>?<br/>" % myRestaurantQuery.name
+                    output+="<input type='submit' value='Delete'>"
+                    output+="</form>"
+                    output+="<a href='/restaurants'>Cancel</a>"
+                    output+="</body></html>"
+                    self.wfile.write(output)
+                    return
+
             if self.path.endswith("/restaurants/new"):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
@@ -60,7 +79,7 @@ class webServerHandler(BaseHTTPRequestHandler):
                 for restaurant in restaurants:
                     output+="<div style='font-size:20px'>%s</div>" % restaurant.name
                     output+="<a href='/restaurants/%s/edit'>Edit</a><br/>" % restaurant.id
-                    output+="<a href='#'>Delete</a><br/><br/>"
+                    output+="<a href='/restaurants/%s/delete'>Delete</a><br/><br/>" % restaurant.id
                 output+="</body></html>"
                 self.wfile.write(output)
                 print output
@@ -113,6 +132,17 @@ class webServerHandler(BaseHTTPRequestHandler):
                         self.send_header('Content-type', 'text/html')
                         self.send_header('Location', '/restaurants')
                         self.end_headers()
+
+            if self.path.endswith("/delete"):
+                restaurantIDPath = self.path.split("/")[2]
+                myRestaurantQuery = session.query(Restaurant).filter_by(id=restaurantIDPath).one()
+                if myRestaurantQuery:
+                    session.delete(myRestaurantQuery)
+                    session.commit()
+                    self.send_response(301)
+                    self.send_header('Content-type', 'text/html')
+                    self.send_header('Location', '/restaurants')
+                    self.end_headers()
 
             if self.path.endswith("/restaurants/new"):
                 ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
